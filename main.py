@@ -1,5 +1,7 @@
 import json
 import requests
+import os
+from dotenv import load_dotenv
 
 class ip:
     def getcurrentip(self) -> str:
@@ -18,4 +20,19 @@ class ip:
             return None
         
         return ip["previousip"]
+
+def getconfig() -> list:
+    with open("config.json", "r") as f:
+        config = json.load(f)
+
+    return config["records"]
+
+def gettoken() -> str:
+    load_dotenv()
+    token = os.getenv("CFDDNS_API_TOKEN")
+
+    if token == None:
+        raise Exception("CFDDNS_API_TOKEN not set")
+
+    return token
 
