@@ -129,5 +129,5 @@ dmypy.json
 .pyre/
 
 # App specific stuff
-.vscode/settings.json
+.vscode
 ippresist.json
