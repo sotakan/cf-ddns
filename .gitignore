@@ -128,5 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# App specific
-ippersist.json
+# App specific stuff
+.vscode/settings.json
+ippresist.json
