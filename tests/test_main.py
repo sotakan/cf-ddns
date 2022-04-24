@@ -18,8 +18,19 @@ class TestMain(unittest.TestCase):
     def test_getpreviousip(self):
         self.assertEqual(self.ip.getpreviousip(), "1.1.1.1")
 
-    def test_getconfig(self):
-        self.assertIsInstance(main.getconfig(), list)
+class TestMainCloudflare(unittest.TestCase):
+    def test_init(self):
+        main.cloudflare()
+
+    @classmethod
+    def setUp(self) -> None:
+        self.cf = main.cloudflare()
 
     def test_gettoken(self):
-        self.assertNotEqual(main.gettoken(), None)
+        self.assertNotEqual(self.cf.token, None)
+
+    def test_getconfig(self):
+        self.assertIsInstance(self.cf.config, list)
+
+    def test_getzoneid(self):
+        self.assertEqual(self.cf.getzoneid(os.getenv("CFDDNS_TEST_DOMAIN")), os.getenv("CFDDNS_TEST_ZONEID"))

@@ -21,18 +21,31 @@ class ip:
         
         return ip["previousip"]
 
-def getconfig() -> list:
-    with open("config.json", "r") as f:
-        config = json.load(f)
 
-    return config["records"]
 
-def gettoken() -> str:
-    load_dotenv()
-    token = os.getenv("CFDDNS_API_TOKEN")
+class cloudflare:
+    def __init__(self) -> None:
+        self.token = self.gettoken()
+        self.config = self.getconfig()
 
-    if token == None:
-        raise Exception("CFDDNS_API_TOKEN not set")
+    def gettoken(self) -> str:
+        load_dotenv()
+        token = os.getenv("CFDDNS_API_TOKEN")
 
-    return token
+        if token == None:
+            raise Exception("CFDDNS_API_TOKEN not set")
 
+        return f"Bearer {token}"
+
+    def getconfig(self) -> list:
+        with open("config.json", "r") as f:
+            config = json.load(f)
+
+        return config["records"]
+
+    def getzoneid(self, recordname: str) -> str:
+        headers = {"Authorization": self.token, "Content-Type": "application/json"}
+        params = {"name": recordname}
+        zoneid = requests.get("https://api.cloudflare.com/client/v4/zones", headers = headers, params = params).json()
+        
+        return zoneid["result"][0]["id"]
