@@ -49,3 +49,13 @@ class cloudflare:
         zoneid = requests.get("https://api.cloudflare.com/client/v4/zones", headers = headers, params = params).json()
         
         return zoneid["result"][0]["id"]
+
+    def getrecord(self, zoneid: str, subdomain: str) -> tuple:
+        headers = {"Authorization": self.token, "Content-Type": "application/json"}
+        params = {"name": subdomain}
+        record = requests.get(f"https://api.cloudflare.com/client/v4/zones/{zoneid}/dns_records", headers = headers, params = params).json()
+        
+        try:
+            return record["result"][0]["content"], record["result"][0]["type"]
+        except IndexError:
+            return None

@@ -34,3 +34,7 @@ class TestMainCloudflare(unittest.TestCase):
 
     def test_getzoneid(self):
         self.assertEqual(self.cf.getzoneid(os.getenv("CFDDNS_TEST_DOMAIN")), os.getenv("CFDDNS_TEST_ZONEID"))
+
+    def test_getrecord(self):
+        zoneid = self.cf.getzoneid(os.getenv("CFDDNS_TEST_DOMAIN"))
+        self.assertEqual(self.cf.getrecord(zoneid, os.getenv("CFDDNS_TEST_SUBDOMAIN")), (os.getenv("CFDDNS_TEST_TESTRECORD"), "A"))
