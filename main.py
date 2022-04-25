@@ -60,5 +60,11 @@ class cloudflare:
         except IndexError:
             return None
 
-    def updaterecord(self, zoneid: str, recordid: str, domain: str, content: str) -> bool:
-        pass
+    def updaterecord(self, zoneid: str, recordid: str, domain: str, content: str, proxied: bool) -> bool:
+        headers = {"Authorization": self.token, "Content-Type": "application/json"}
+        params = {"name": domain, "type": "A", "proxied": proxied, "content": content, "ttl": 1}
+        response = requests.put(f"https://api.cloudflare.com/client/v4/zones/{zoneid}/dns_records/{recordid}", headers = headers, params = params)
+        if response["success"]:
+            return True
+        else:
+            return False
