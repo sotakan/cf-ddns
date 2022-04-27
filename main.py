@@ -50,12 +50,21 @@ class cloudflare:
         
         return zoneid["result"][0]["id"]
 
-    def getrecord(self, zoneid: str, subdomain: str) -> str("List of: Current IP, Record type, Proxy status"):
+    def getrecord(self, zoneid: str, subdomain: str) -> str("List of: Current IP, Record type, Proxy status, Record ID"):
         headers = {"Authorization": self.token, "Content-Type": "application/json"}
         params = {"name": subdomain}
         record = requests.get(f"https://api.cloudflare.com/client/v4/zones/{zoneid}/dns_records", headers = headers, params = params).json()
         
         try:
-            return [record["result"][0]["content"], record["result"][0]["type"], record["result"]["proxied"]]
+            return [record["result"][0]["content"], record["result"][0]["type"], record["result"][0]["proxied"], record["result"][0]["id"]]
         except IndexError:
             return None
+
+    def updaterecord(self, zoneid: str, recordid: str, domain: str, content: str, proxied: bool) -> bool:
+        headers = {"Authorization": self.token, "Content-Type": "application/json"}
+        data = {"name": domain, "type": "A", "proxied": proxied, "content": content, "ttl": 1}
+        response = requests.put(f"https://api.cloudflare.com/client/v4/zones/{zoneid}/dns_records/{recordid}", headers = headers, data = json.dumps(data)).json()
+        if response["success"]:
+            return True
+        else:
+            return False
