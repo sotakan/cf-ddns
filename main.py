@@ -50,21 +50,21 @@ class cloudflare:
         
         return zoneid["result"][0]["id"]
 
-    def getrecord(self, zoneid: str, subdomain: str) -> str("List of: Current IP, Record type, Proxy status, Record ID"):
+    def getrecord(self, zoneid: str, subdomain: str) -> str("Dict of: Current IP, Record type, Proxy status, Record ID"):
         headers = {"Authorization": self.token, "Content-Type": "application/json"}
         params = {"name": subdomain}
         record = requests.get(f"https://api.cloudflare.com/client/v4/zones/{zoneid}/dns_records", headers = headers, params = params).json()
         
         try:
-            return [record["result"][0]["content"], record["result"][0]["type"], record["result"]["proxied"], record["result"]["id"]]
+            return {"content": record["result"][0]["content"], "type": record["result"][0]["type"], "proxy": record["result"][0]["proxied"], "record_id": record["result"][0]["id"]}
         except IndexError:
             return None
 
     def updaterecord(self, zoneid: str, recordid: str, domain: str, content: str, proxied: bool) -> bool:
         headers = {"Authorization": self.token, "Content-Type": "application/json"}
-        params = {"name": domain, "type": "A", "proxied": proxied, "content": content, "ttl": 1}
-        response = requests.put(f"https://api.cloudflare.com/client/v4/zones/{zoneid}/dns_records/{recordid}", headers = headers, params = params)
-        if response["success"]:
+        data = {"name": domain, "type": "A", "proxied": proxied, "content": content, "ttl": 1}
+        response = requests.put(f"https://api.cloudflare.com/client/v4/zones/{zoneid}/dns_records/{recordid}", headers = headers, data = json.dumps(data))
+        if response.status_code == 200:
             return True
         else:
             return False

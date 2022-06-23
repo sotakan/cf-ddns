@@ -37,4 +37,21 @@ class TestMainCloudflare(unittest.TestCase):
 
     def test_getrecord(self):
         zoneid = self.cf.getzoneid(os.getenv("CFDDNS_TEST_DOMAIN"))
-        self.assertEqual(self.cf.getrecord(zoneid, os.getenv("CFDDNS_TEST_SUBDOMAIN")), (os.getenv("CFDDNS_TEST_TESTRECORD"), "A"))
+        res = self.cf.getrecord(zoneid, os.getenv("CFDDNS_TEST_SUBDOMAIN"))
+        self.assertEqual(res["content"], os.getenv("CFDDNS_TEST_TESTRECORD"))
+        self.assertEqual(res["type"], "A")
+
+    def test_updaterecord(self):
+        zoneid = self.cf.getzoneid(os.getenv("CFDDNS_TEST_DOMAIN"))
+        test_record = self.cf.getrecord(zoneid, os.getenv("CFDDNS_TEST_SUBDOMAIN"))
+        self.cf.updaterecord(zoneid, test_record["record_id"], os.getenv("CFDDNS_TEST_SUBDOMAIN"), "0.0.0.0", test_record["proxy"])
+        
+        # Test if things are in order...
+        res = self.cf.getrecord(zoneid, os.getenv("CFDDNS_TEST_SUBDOMAIN"))
+        self.assertEqual(res["content"], "0.0.0.0")
+        self.assertEqual(res["type"], "A")
+        self.assertEqual(res["proxy"], test_record["proxy"])
+
+        # Revert changes
+        self.cf.updaterecord(zoneid, test_record["record_id"], os.getenv("CFDDNS_TEST_SUBDOMAIN"), os.getenv("CFDDNS_TEST_TESTRECORD"), test_record["proxy"])
+
