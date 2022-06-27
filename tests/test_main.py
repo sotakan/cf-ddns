@@ -37,17 +37,21 @@ class TestMainCloudflare(unittest.TestCase):
 
     def test_getrecord(self):
         zoneid = self.cf.getzoneid(os.getenv("CFDDNS_TEST_DOMAIN"))
-        self.assertEqual(self.cf.getrecord(zoneid, os.getenv("CFDDNS_TEST_SUBDOMAIN")), (os.getenv("CFDDNS_TEST_TESTRECORD"), "A"))
+        res = self.cf.getrecord(zoneid, os.getenv("CFDDNS_TEST_SUBDOMAIN"))
+        self.assertEqual(res["content"], os.getenv("CFDDNS_TEST_TESTRECORD"))
+        self.assertEqual(res["type"], "A")
 
     def test_updaterecord(self):
         zoneid = self.cf.getzoneid(os.getenv("CFDDNS_TEST_DOMAIN"))
-        record = self.cf.getrecord(zoneid, os.getenv("CFDDNS_TEST_SUBDOMAIN"))
+        test_record = self.cf.getrecord(zoneid, os.getenv("CFDDNS_TEST_SUBDOMAIN"))
+        self.cf.updaterecord(zoneid, test_record["record_id"], os.getenv("CFDDNS_TEST_SUBDOMAIN"), "0.0.0.0", test_record["proxy"])
+        
+        # Test if things are in order...
+        res = self.cf.getrecord(zoneid, os.getenv("CFDDNS_TEST_SUBDOMAIN"))
+        self.assertEqual(res["content"], "0.0.0.0")
+        self.assertEqual(res["type"], "A")
+        self.assertEqual(res["proxy"], test_record["proxy"])
 
-        # Check if record is A
-        if record[1] != "A":
-            raise Exception("Test record is not A")
+        # Revert changes
+        self.cf.updaterecord(zoneid, test_record["record_id"], os.getenv("CFDDNS_TEST_SUBDOMAIN"), os.getenv("CFDDNS_TEST_TESTRECORD"), test_record["proxy"])
 
-
-        self.assertTrue(self.cf.updaterecord(zoneid, record[3], os.getenv("CFDDNS_TEST_SUBDOMAIN"), "192.168.245.1", record[2]))
-
-        self.cf.updaterecord(zoneid, record[3], os.getenv("CFDDNS_TEST_SUBDOMAIN"), os.getenv("CFDDNS_TEST_TESTRECORD"), record[2])
